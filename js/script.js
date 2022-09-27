@@ -15,6 +15,7 @@ window.addEventListener('load', function(){
             this.speedY = 0;
             this.speedX = 0;
             this.lives = 3;
+            this.shootTick = 0;
         }
         update(){
             switch (true) {
@@ -62,8 +63,13 @@ window.addEventListener('load', function(){
                 case (this.game.keys.includes(' ')):
                     // catch method
                     if (this.game.variableBox.catched === true) {
-                        this.shootBox();
-                        console.log('SHOOT!!');
+                        this.shootTick++;
+                        if(this.shootTick > 50){
+                            this.shootBox();
+                            console.log('SHOOOOOOOOOOOOOOOT!!');
+                            this.shootTick = 0;
+                        }
+
                     } else {
                         this.catchBox();
                         console.log('CATCH!');
@@ -259,7 +265,7 @@ window.addEventListener('load', function(){
                 if(this.shooted === true /*&& this.countForShoot > 100*/){
                     // console.log('shooted: ', this.countForShoot);
                     this.catched = false;
-                    this.speed = 5;
+                    this.speed = 10;
                     this.y -= this.speed;
                     // this.countForShoot = 0;
                 }
