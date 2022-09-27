@@ -21,42 +21,42 @@ window.addEventListener('load', function(){
                 case (this.game.keys.includes('ArrowUp') && this.game.keys.length === 1):
                     this.speedY = -5;
                     this.speedX = 0;
-                    console.log('NORTH');
+                    // console.log('NORTH');
                     break;
                 case (this.game.keys.includes('ArrowUp') && this.game.keys.includes('ArrowRight')):
                     this.speedY = -5;
                     this.speedX = 5;
-                    console.log('NORTHEAST');
+                    // console.log('NORTHEAST');
                     break;
                 case (this.game.keys.includes('ArrowUp') && this.game.keys.includes('ArrowLeft')):
                     this.speedY = -5;
                     this.speedX = -5;
-                    console.log('NORTHWEST');
+                    // console.log('NORTHWEST');
                     break;
                 case (this.game.keys.includes('ArrowDown') && this.game.keys.length === 1):
                     this.speedY = 5;
                     this.speedX = 0;
-                    console.log('SOUTH');
+                    // console.log('SOUTH');
                     break;
                 case (this.game.keys.includes('ArrowDown') && this.game.keys.includes('ArrowRight')):
                     this.speedY = 5;
                     this.speedX = 5;
-                    console.log('SOUTHEAST');
+                    // console.log('SOUTHEAST');
                     break;
                 case (this.game.keys.includes('ArrowDown') && this.game.keys.includes('ArrowLeft')):
                     this.speedY = 5;
                     this.speedX = -5;
-                    console.log('SOUTWEST');
+                    // console.log('SOUTWEST');
                     break;
                  case (this.game.keys.includes('ArrowRight') && this.game.keys.length === 1):
                     this.speedX = 5;
                     this.speedY = 0;
-                    console.log('EAST');
+                    // console.log('EAST');
                     break;
                 case (this.game.keys.includes('ArrowLeft') && this.game.keys.length === 1):
                     this.speedX = -5;
                     this.speedY = 0;
-                    console.log('WEST');
+                    // console.log('WEST');
                     break;
                 default:
                     this.speedX = 0;
@@ -215,14 +215,14 @@ window.addEventListener('load', function(){
             // if(this.ammo > 0){
                 if (this.countToxic % 3 === 0 && this.countToxic > 0){
                 this.projectiles.push(new ToxicResult(this.game, this.x, this.y + this.height/2)); 
-                console.log(this.projectiles);
-                console.log('TOXIC');
+                // console.log(this.projectiles);
+                // console.log('TOXIC');
                 this.countToxic = 0;
                 } else {
                     this.projectiles.push(new ReturnProjectile(this.game, this.x, this.y + this.height/2));
                     this.countToxic++;
                 }
-                console.log(this.countToxic);
+                // console.log(this.countToxic);
                 
                 // console.log(this.projectiles);
                 
@@ -245,10 +245,24 @@ window.addEventListener('load', function(){
             // }
             this.player.update();
             this.functionMachine.update(deltaTime);
+            
+            this.functionMachine.projectiles.forEach(projectile => {
+                if(this.checkCollision(projectile, this.player)){
+                    projectile.markedForDeletion = true;
+                }
+            });
         }
         draw(context){
             this.player.draw(context);
             this.functionMachine.draw(context);
+        }
+        // addFunctionMachine
+        // addArrayTank
+        checkCollision(rect1, rect2){
+            return (    rect1.x < rect2.x + rect2.width &&
+                        rect1.x + rect1.width > rect2.x &&
+                        rect1.y < rect2.y + rect2.height &&
+                        rect1.height + rect1.y > rect2.y)
         }
     }
 
