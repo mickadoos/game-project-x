@@ -91,8 +91,14 @@ window.addEventListener('load', function(){
         }
         catchBox(){
             if(this.game.checkCollision(this, this.game.variableBox)){
-                this.game.variableBox.speed = 10;
+                //this.game.variableBox.attach()
+                this.game.variableBox.catched = true;
+                // this.game.variableBox.speed = 10;
                 console.log('Catch the BOX You FOOL!');
+            }
+            if (!(this.game.checkCollision(this, this.game.variableBox))) {
+                this.catched = false;
+                console.log('NO LONGER');
             }
         }
     }
@@ -225,15 +231,23 @@ window.addEventListener('load', function(){
             this.y = this.game.height / 2;
             this.speed = 0;
             // this.speedY = 0;
+            this.catched = false;
         }
         update(){
-            this.x += this.speed;
+                if(this.catched === true){
+                    console.log('Catched!!!');
+                }
+                // this.x = this.game.player.x + 17;
+                // this.y = this.game.player.y - 40;
+           
+            // this.x += this.speed;
             // if (this.x < this.game.width * 0.2) this.markedForDeletion = true;
         }
         draw(context){
             context.fillStyle = 'brown';
             context.fillRect(this.x, this.y, this.width, this.height);
         }
+
     }
     class FunctionMachine {
         constructor(game){
