@@ -14,6 +14,7 @@ window.addEventListener('load', function(){
             this.y = 100;
             this.speedY = 0;
             this.speedX = 0;
+            this.lives = 3;
         }
         update(){
             switch (true) {
@@ -58,6 +59,11 @@ window.addEventListener('load', function(){
                     this.speedY = 0;
                     // console.log('WEST');
                     break;
+                case (this.game.keys.includes(' ')):
+                    // catch method
+                    this.catchBox();
+                    console.log('CATCH!');
+                    break;
                 default:
                     this.speedX = 0;
                     this.speedY = 0;
@@ -77,8 +83,17 @@ window.addEventListener('load', function(){
             // console.log('Speed Y', this.speedY);
         }
         draw(context){
+            context.fillStyle = 'black';
+            context.font = '30px Helvetica';
+            context.fillText(this.lives, this.x, this.y - 5);
             context.fillStyle = 'red';
             context.fillRect(this.x, this.y, this.width, this.height);
+        }
+        catchBox(){
+            if(this.game.checkCollision(this, this.game.variableBox)){
+                this.game.variableBox.speed = 10;
+                console.log('Catch the BOX You FOOL!');
+            }
         }
     }
     class InputHandler { //keep track specified user input 
@@ -88,7 +103,8 @@ window.addEventListener('load', function(){
                 if ((   (e.key === 'ArrowUp') ||
                         (e.key === 'ArrowDown') ||
                         (e.key === 'ArrowRight') ||
-                        (e.key === 'ArrowLeft')
+                        (e.key === 'ArrowLeft') ||
+                        (e.key === ' ')
                 ) && this.game.keys.indexOf(e.key) === -1 && this.game.keys.length < 2){
                     this.game.keys.push(e.key);
                 }
@@ -151,7 +167,45 @@ window.addEventListener('load', function(){
 
     }
     class UI { //draw information for the user
-        
+        constructor(game){
+            this.game = game;
+            this.fontSize = 25;
+            this.fontFamily = 'Helvetica';
+            this.color = 'white';
+        }
+        draw(context){
+            context.save();
+            context.fillStyle = this.color;
+            context.shadowOffsetX = 2;
+            context.shadowOffsety = 2;
+            context.shadowColor = 'black';
+            context.font = this.fontSize + 'px' + this.fontFamily;
+            //score
+            context.fillText('Score: ' + this.game.score, 20, 40);
+            //Game Time
+            const formattedTime = (this.game.gameTime * 0.001).toFixed(1);
+            context.fillText('Time: ' + formattedTime, this.game.width - 200, 40);
+            // game over message          57:30 Win or Lose condition
+            if (this.game.gameOver){
+                context.textAlign = 'center';
+                let message1;
+                let message2;
+                if (this.game.score > this.game.winningScore){
+                    message1 = 'YOU WIN!';
+                    message2 = 'Well Done!';
+                } else {
+                    message1 = 'YOU DIE!';
+                    message2 = 'Try harder!';
+                }
+                context.font = '50px ' + this.fontFamily;
+                context.fillText(message1, this.game.width * 0.5, this.game.height * 0.5) - 40;
+                context.font = '25px ' + this.fontFamily;
+                context.fillText(message2, this.game.width * 0.5, this.game.height * 0.5 + 40);
+            }
+            // gametime
+
+            context.restore();
+        }
     }
     class ArrayTank {
         constructor(game){
@@ -160,6 +214,25 @@ window.addEventListener('load', function(){
             this.height = 75;
             this.x = game.width/2;
             this.y = 100;
+        }
+    }
+    class VariableBox {
+        constructor(game){
+            this.game = game;
+            this.width = 40;
+            this.height = 40;
+            this.x = 50;
+            this.y = this.game.height / 2;
+            this.speed = 0;
+            // this.speedY = 0;
+        }
+        update(){
+            this.x += this.speed;
+            // if (this.x < this.game.width * 0.2) this.markedForDeletion = true;
+        }
+        draw(context){
+            context.fillStyle = 'brown';
+            context.fillRect(this.x, this.y, this.width, this.height);
         }
     }
     class FunctionMachine {
@@ -237,24 +310,45 @@ window.addEventListener('load', function(){
             this.player = new Player(this);
             this.input = new InputHandler(this);
             this.functionMachine = new FunctionMachine(this);
+            this.variableBox = new VariableBox(this);
+            this.ui = new UI(this);
             this.keys = [];
+            this.gameOver = false;
+            this.score = 0;
+            this.winningScore = 10;
+            this.gameTime = 0;
+            this.timeLimit = 30000;
         }
         update(deltaTime){
             // if(!deltaTime){             //deltaTime is NaN so we initialize to 0
             //     deltaTime = 0;
             // }
+            if (!this.gameOver) this.gameTime += deltaTime;
+            // if (this.gameTime > this.timeLimit) this.gameOver = true;
+            if (this.player.lives === 0) this.gameOver = true;
             this.player.update();
             this.functionMachine.update(deltaTime);
+            this.variableBox.update();
             
             this.functionMachine.projectiles.forEach(projectile => {
                 if(this.checkCollision(projectile, this.player)){
                     projectile.markedForDeletion = true;
+                    if(projectile instanceof ToxicResult){
+                        this.player.lives--;
+                    }
+                    if(projectile instanceof ReturnProjectile && !(projectile instanceof ToxicResult)){
+                        this.score++;
+                    }
+                    if(this.score > this.winningScore) this.gameOver = true; 
                 }
+                
             });
         }
         draw(context){
             this.player.draw(context);
             this.functionMachine.draw(context);
+            this.variableBox.draw(context);
+            this.ui.draw(context);
         }
         // addFunctionMachine
         // addArrayTank
