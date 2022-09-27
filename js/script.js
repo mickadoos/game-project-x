@@ -61,8 +61,14 @@ window.addEventListener('load', function(){
                     break;
                 case (this.game.keys.includes(' ')):
                     // catch method
-                    this.catchBox();
-                    console.log('CATCH!');
+                    if (this.game.variableBox.catched === true) {
+                        this.shootBox();
+                        console.log('SHOOT!!');
+                    } else {
+                        this.catchBox();
+                        console.log('CATCH!');
+                    }
+
                     break;
                 default:
                     this.speedX = 0;
@@ -96,10 +102,16 @@ window.addEventListener('load', function(){
                 // this.game.variableBox.speed = 10;
                 console.log('Catch the BOX You FOOL!');
             }
-            if (!(this.game.checkCollision(this, this.game.variableBox))) {
-                this.catched = false;
-                console.log('NO LONGER');
-            }
+
+            // if (!(this.game.checkCollision(this, this.game.variableBox))) {
+            //     this.catched = false;
+            //     // console.log('NO LONGER');
+            // }
+        }
+        shootBox(){
+            this.game.variableBox.shooted = true;
+            // this.game.variableBox.speed = 5;
+            // this.game.variableBox.y -= this.game.variableBox.speed;
         }
     }
     class InputHandler { //keep track specified user input 
@@ -232,13 +244,27 @@ window.addEventListener('load', function(){
             this.speed = 0;
             // this.speedY = 0;
             this.catched = false;
+            this.shooted = false;
+            this.countForShoot = 0;
         }
         update(){
+                // if(this.catched === true){
+                //     console.log('Catched!!!');
+                // }
                 if(this.catched === true){
-                    console.log('Catched!!!');
+                    this.x = this.game.player.x + 17;
+                    this.y = this.game.player.y - 40;
+                    // this.countForShoot++;
+                }  
+                if(this.shooted === true /*&& this.countForShoot > 100*/){
+                    // console.log('shooted: ', this.countForShoot);
+                    this.catched = false;
+                    this.speed = 5;
+                    this.y -= this.speed;
+                    // this.countForShoot = 0;
                 }
-                // this.x = this.game.player.x + 17;
-                // this.y = this.game.player.y - 40;
+                
+
            
             // this.x += this.speed;
             // if (this.x < this.game.width * 0.2) this.markedForDeletion = true;
