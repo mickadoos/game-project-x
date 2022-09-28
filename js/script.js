@@ -180,15 +180,23 @@ window.addEventListener('load', function(){
             this.width = 30;
             this.height = 10;
             this.speed = 3;
+            this.color = `rgb(${Math.ceil(Math.random() * 255)},${Math.ceil(Math.random() * 255)},${Math.ceil(Math.random() * 255)})`;
+            this.assigned = false;
             this.markedForDeletion = false; 
            
         }
         update(){
-            this.x -= this.speed;
-            if (this.x < this.game.width * 0.2) this.markedForDeletion = true;
+            if(this.assigned){
+                this.x = this.game.variableBox.x;
+                this.y = this.game.variableBox.y;
+            }
+            else {
+                this.x -= this.speed;
+                if (this.x < this.game.width * 0.2) this.markedForDeletion = true;
+            }
         }
         draw(context){
-            context.fillStyle = 'yellow';
+            context.fillStyle = this.color;
             context.fillRect(this.x, this.y, this.width, this.height);
         }
     }
@@ -319,6 +327,7 @@ window.addEventListener('load', function(){
             this.shooted = false;
             this.stored = false;
             this.popped = false;
+            this.assigned = false;
             this.markedForDeletion = false;
             this.countForShoot = 0;
         }
@@ -367,6 +376,9 @@ window.addEventListener('load', function(){
             context.fillStyle = 'black';
             context.font = '30px Helvetica';
             context.fillText('VariableBox', this.x, this.y - 5);
+        }
+        assignReturn(){
+            this.assigned = true;
         }
 
     }
@@ -479,13 +491,24 @@ window.addEventListener('load', function(){
                     }
                     if(this.score > this.winningScore) this.gameOver = true; 
                 }
+                if(this.checkCollision(projectile, this.variableBox)){
+                    console.log('Collision projectile: ', projectile);
+                    if(projectile instanceof ReturnProjectile && !(projectile instanceof ToxicResult)){
+                        this.variableBox.assignReturn();
+                        this.functionMachine.projectiles.forEach(projectile2 => {
+                            projectile2.assigned = false;
+                        })
+                        projectile.assigned = true;
+                    }
+                }
                 
             });
         }
         draw(context){
-            this.functionMachine.draw(context);
+            
             this.arrayTank.draw(context);
             this.variableBox.draw(context);
+            this.functionMachine.draw(context);
             this.player.draw(context);
             this.ui.draw(context);
         }
