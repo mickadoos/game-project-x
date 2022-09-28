@@ -137,6 +137,7 @@ window.addEventListener('load', function(){
         }
         shootBox(){
             this.game.variableBox.shooted = true;
+            this.game.variableBox.constant = true;
             // this.game.variableBox.speed = 5;
             // this.game.variableBox.y -= this.game.variableBox.speed;
         }
@@ -177,11 +178,12 @@ window.addEventListener('load', function(){
             this.game = game;
             this.x = x;
             this.y = y;
-            this.width = 30;
-            this.height = 10;
+            this.width = 50;
+            this.height = 20;
             this.speed = 3;
             this.color = `rgb(${Math.ceil(Math.random() * 255)},${Math.ceil(Math.random() * 255)},${Math.ceil(Math.random() * 255)})`;
             this.assigned = false;
+            this.randomDirection = Math.random() * (Math.round(Math.random()) ? 1 : -1);
             this.markedForDeletion = false; 
            
         }
@@ -192,6 +194,7 @@ window.addEventListener('load', function(){
             }
             else {
                 this.x -= this.speed;
+                this.y -= this.speed * this.randomDirection;
                 if (this.x < this.game.width * 0.2) this.markedForDeletion = true;
             }
         }
@@ -203,6 +206,8 @@ window.addEventListener('load', function(){
     class ToxicResult extends ReturnProjectile {
         constructor(game, x, y){
             super(game, x, y);
+            this.width = 20;
+            this.height = 50;
         }
         update(){
             this.x -= this.speed * 1.5;
@@ -328,6 +333,7 @@ window.addEventListener('load', function(){
             this.stored = false;
             this.popped = false;
             this.assigned = false;
+            this.constant = false;
             this.markedForDeletion = false;
             this.countForShoot = 0;
         }
@@ -391,7 +397,7 @@ window.addEventListener('load', function(){
             this.y = 500;
             this.projectiles = [];
             this.ammoTimer = 0;
-            this.ammoInterval = 1000;
+            this.ammoInterval = 700;
             this.countToxic = 0; 
            
         }
@@ -481,19 +487,19 @@ window.addEventListener('load', function(){
             
             this.functionMachine.projectiles.forEach(projectile => {
                 if(this.checkCollision(projectile, this.player)){
-                    projectile.markedForDeletion = true;
+                    // projectile.markedForDeletion = true;
                     if(projectile instanceof ToxicResult){
                         this.player.lives--;
                     }
-                    if(projectile instanceof ReturnProjectile && !(projectile instanceof ToxicResult)){
-                        this.score++;
-                        // this.player.catchReturn();
-                    }
+                    // if(projectile instanceof ReturnProjectile && !(projectile instanceof ToxicResult)){
+                    //     this.score++;
+                    //     // this.player.catchReturn();
+                    // }
                     if(this.score > this.winningScore) this.gameOver = true; 
                 }
                 if(this.checkCollision(projectile, this.variableBox)){
                     console.log('Collision projectile: ', projectile);
-                    if(projectile instanceof ReturnProjectile && !(projectile instanceof ToxicResult)){
+                    if(projectile instanceof ReturnProjectile && !(projectile instanceof ToxicResult) && !(this.variableBox.constant)){
                         this.variableBox.assignReturn();
                         this.functionMachine.projectiles.forEach(projectile2 => {
                             projectile2.assigned = false;
