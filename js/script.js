@@ -77,7 +77,7 @@ window.addEventListener('load', function(){
                             console.log('CATCH!');
                         }
                     }
-                    if (this.game.variableBox.stored === true && this.game.checkCollision(this, this.game.variableBox)){
+                    if (this.game.variableBox.stored === true && this.game.checkCollision(this, this.game.variableBox) && this.game.arrayTank.passed === false){
                         console.log('READY TO POP POP POP');
 
                         this.countTick++;
@@ -88,6 +88,10 @@ window.addEventListener('load', function(){
                                 this.countTick = 0;
                             }
                     }
+                    if (this.game.arrayTank.completed && this.game.checkCollision(this, this.game.arrayTank)){
+                        this.passArray();
+                    }
+
 
                         
                     break;
@@ -141,6 +145,9 @@ window.addEventListener('load', function(){
             this.game.variableBox.stored = false;
             this.game.variableBox.catched = false;
             this.game.variableBox.shooted = false
+        }
+        passArray(){
+            this.game.arrayTank.passed = true;
         }
     }
     class InputHandler { //keep track specified user input 
@@ -261,11 +268,37 @@ window.addEventListener('load', function(){
             this.height = 75;
             this.x = 400;
             this.y = 100;
+            this.speed = 0;
+            this.completed = false;
+            this.passed = false;
         }
         update(){
-            
+            if(this.game.variableBox.stored) 
+            {
+                if(!this.passed) {
+                    console.log('SE COMPLETA')
+                    this.completed = true;
+                }
+            }
+            // if(this.completed){
+            //     console.log('COMPLETED');
+            //     if(this.game.checkCollision(this, this.game.player)){
+            //         this.game.player.passArray();
+            //     }
+            // }
+            if(this.passed){
+                console.log('PASSED');
+                this.completed = false;
+                this.speed = 10;
+                this.y += this.speed;
+            }
+    
         }
         draw(context){
+            if(this.completed === true){
+                context.fillStyle = 'black'
+                context.fillRect(this.x - 30 , this.y, 10, this.height);
+            }
             context.fillStyle = 'black';
             context.font = '30px Helvetica';
             context.fillText('ArrayTank', this.x, this.y - 5);
@@ -431,6 +464,7 @@ window.addEventListener('load', function(){
             if (this.player.lives === 0) this.gameOver = true;
             this.player.update();
             this.functionMachine.update(deltaTime);
+            this.arrayTank.update();
             this.variableBox.update();
             
             this.functionMachine.projectiles.forEach(projectile => {
@@ -441,6 +475,7 @@ window.addEventListener('load', function(){
                     }
                     if(projectile instanceof ReturnProjectile && !(projectile instanceof ToxicResult)){
                         this.score++;
+                        // this.player.catchReturn();
                     }
                     if(this.score > this.winningScore) this.gameOver = true; 
                 }
