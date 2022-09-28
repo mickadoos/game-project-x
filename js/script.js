@@ -15,7 +15,7 @@ window.addEventListener('load', function(){
             this.speedY = 0;
             this.speedX = 0;
             this.lives = 3;
-            this.shootTick = 0;
+            this.countTick = 0;
         }
         update(){
             switch (true) {
@@ -62,19 +62,34 @@ window.addEventListener('load', function(){
                     break;
                 case (this.game.keys.includes(' ')):
                     // catch method
-                    if (this.game.variableBox.catched === true) {
-                        this.shootTick++;
-                        if(this.shootTick > 50){
-                            this.shootBox();
-                            console.log('SHOOOOOOOOOOOOOOOT!!');
-                            this.shootTick = 0;
-                        }
+                    if (this.game.variableBox.stored === false && this.game.variableBox.stored === false && this.game.variableBox.popped === false){
 
-                    } else {
-                        this.catchBox();
-                        console.log('CATCH!');
+                        if (this.game.variableBox.catched === true) {
+                            this.countTick++;
+                            if(this.countTick > 50){
+                                this.shootBox();
+                                console.log('SHOOOOOOOOOOOOOOOT!!');
+                                this.countTick = 0;
+                            }
+                            
+                        } else {
+                            this.catchBox();
+                            console.log('CATCH!');
+                        }
+                    }
+                    if (this.game.variableBox.stored === true && this.game.checkCollision(this, this.game.variableBox)){
+                        console.log('READY TO POP POP POP');
+
+                        this.countTick++;
+                            if(this.countTick > 50){
+                                this.popBox();
+                                console.log('POP POP POP POP POP POPPOP POP POP POP POP POP!!');
+                                this.game.variableBox.markedForDeletion = true;
+                                this.countTick = 0;
+                            }
                     }
 
+                        
                     break;
                 default:
                     this.speedX = 0;
@@ -95,11 +110,13 @@ window.addEventListener('load', function(){
             // console.log('Speed Y', this.speedY);
         }
         draw(context){
-            context.fillStyle = 'black';
-            context.font = '30px Helvetica';
-            context.fillText(this.lives, this.x, this.y - 5);
+            
             context.fillStyle = 'red';
             context.fillRect(this.x, this.y, this.width, this.height);
+            context.fillStyle = 'black';
+            context.font = '30px Helvetica';
+            context.fillText(this.lives, this.x + 30, this.y + 50);
+            context.fillText('Player', this.x, this.y - 5);
         }
         catchBox(){
             if(this.game.checkCollision(this, this.game.variableBox)){
@@ -119,6 +136,12 @@ window.addEventListener('load', function(){
             // this.game.variableBox.speed = 5;
             // this.game.variableBox.y -= this.game.variableBox.speed;
         }
+        popBox(){
+            this.game.variableBox.popped = true;
+            this.game.variableBox.stored = false;
+            this.game.variableBox.catched = false;
+            this.game.variableBox.shooted = false
+        }
     }
     class InputHandler { //keep track specified user input 
         constructor(game){
@@ -129,7 +152,7 @@ window.addEventListener('load', function(){
                         (e.key === 'ArrowRight') ||
                         (e.key === 'ArrowLeft') ||
                         (e.key === ' ')
-                ) && this.game.keys.indexOf(e.key) === -1 && this.game.keys.length < 2){
+                ) && this.game.keys.indexOf(e.key) === -1 ){
                     this.game.keys.push(e.key);
                 }
                 console.log(this.game.keys);
@@ -236,8 +259,18 @@ window.addEventListener('load', function(){
             this.game = game;
             this.width = 400;
             this.height = 75;
-            this.x = game.width/2;
+            this.x = 400;
             this.y = 100;
+        }
+        update(){
+            
+        }
+        draw(context){
+            context.fillStyle = 'black';
+            context.font = '30px Helvetica';
+            context.fillText('ArrayTank', this.x, this.y - 5);
+            context.fillStyle = 'violet';
+            context.fillRect(this.x, this.y, this.width, this.height);
         }
     }
     class VariableBox {
@@ -251,6 +284,9 @@ window.addEventListener('load', function(){
             // this.speedY = 0;
             this.catched = false;
             this.shooted = false;
+            this.stored = false;
+            this.popped = false;
+            this.markedForDeletion = false;
             this.countForShoot = 0;
         }
         update(){
@@ -262,12 +298,29 @@ window.addEventListener('load', function(){
                     this.y = this.game.player.y - 40;
                     // this.countForShoot++;
                 }  
-                if(this.shooted === true /*&& this.countForShoot > 100*/){
+                if(this.shooted === true && !(this.game.checkCollision(this, this.game.arrayTank))){
                     // console.log('shooted: ', this.countForShoot);
                     this.catched = false;
+                    this.popped = false;
                     this.speed = 10;
                     this.y -= this.speed;
                     // this.countForShoot = 0;
+                }
+                if(this.game.checkCollision(this, this.game.arrayTank) && this.shooted === true){
+                    this.stored = true;
+                    this.x = this.game.arrayTank.x + 20;
+                    this.y = this.game.arrayTank.y + 20;
+                }
+                if (this.popped === true){
+                    this.speed = 15;
+                    this.x += this.speed;
+                }
+                if (this.popped && this.markedForDeletion){
+                    // console.log(this.x);
+                    if (this.x > canvas.width * 0.5){
+                        // console.log('hola??????', this);
+                        delete this;
+                    }
                 }
                 
 
@@ -278,6 +331,9 @@ window.addEventListener('load', function(){
         draw(context){
             context.fillStyle = 'brown';
             context.fillRect(this.x, this.y, this.width, this.height);
+            context.fillStyle = 'black';
+            context.font = '30px Helvetica';
+            context.fillText('VariableBox', this.x, this.y - 5);
         }
 
     }
@@ -357,6 +413,7 @@ window.addEventListener('load', function(){
             this.input = new InputHandler(this);
             this.functionMachine = new FunctionMachine(this);
             this.variableBox = new VariableBox(this);
+            this.arrayTank = new ArrayTank(this);
             this.ui = new UI(this);
             this.keys = [];
             this.gameOver = false;
@@ -391,9 +448,10 @@ window.addEventListener('load', function(){
             });
         }
         draw(context){
-            this.player.draw(context);
             this.functionMachine.draw(context);
+            this.arrayTank.draw(context);
             this.variableBox.draw(context);
+            this.player.draw(context);
             this.ui.draw(context);
         }
         // addFunctionMachine
