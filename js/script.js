@@ -13,14 +13,16 @@ window.addEventListener('load', function(){
             this.x = 20;
             this.y = 100;
             this.image = new Image();
-            this.image.src = 'images/playerDownLong.png';
+            this.image.src = 'images/player_animation_tileset.png';
             this.frameX = 0;
             this.frameY = 0;
+            this.minFrame = 0;
             this.maxFrame = 4;
             this.frameTimer = 0;
-            this.frameInterval = 300;
+            this.frameInterval = 200;
             this.speedY = 0;
             this.speedX = 0;
+            this.speedMax = 7;
             this.direction = 'STAY';
             this.lives = 3;
             this.countTick = 0;
@@ -29,45 +31,52 @@ window.addEventListener('load', function(){
             switch (true) {
 
                 case (this.game.keys.includes('ArrowUp') && this.game.keys.length === 1):
-                    this.speedY = -5;
+                    this.speedY = -this.speedMax;
                     this.speedX = 0;
                     // console.log('NORTH');
+                    this.direction = 'NORTH';
                     break;
                 case (this.game.keys.includes('ArrowUp') && this.game.keys.includes('ArrowRight')):
-                    this.speedY = -5;
-                    this.speedX = 5;
+                    this.speedY = -this.speedMax;
+                    this.speedX = this.speedMax;
+                    this.direction = 'NORTH';
                     // console.log('NORTHEAST');
                     break;
                 case (this.game.keys.includes('ArrowUp') && this.game.keys.includes('ArrowLeft')):
-                    this.speedY = -5;
-                    this.speedX = -5;
+                    this.speedY = -this.speedMax;
+                    this.speedX = -this.speedMax;
+                    this.direction = 'NORTH';
                     // console.log('NORTHWEST');
                     break;
                 case (this.game.keys.includes('ArrowDown') && this.game.keys.length === 1):
-                    this.speedY = 5;
+                    this.speedY = this.speedMax;
                     this.speedX = 0;
                     // console.log('SOUTH');
                     this.direction = 'SOUTH';
-                    this.moveAnimation();
+                    // this.moveAnimation();
                     break;
                 case (this.game.keys.includes('ArrowDown') && this.game.keys.includes('ArrowRight')):
-                    this.speedY = 5;
-                    this.speedX = 5;
+                    this.speedY = this.speedMax;
+                    this.speedX = this.speedMax;
+                    this.direction = 'SOUTH';
                     // console.log('SOUTHEAST');
                     break;
                 case (this.game.keys.includes('ArrowDown') && this.game.keys.includes('ArrowLeft')):
-                    this.speedY = 5;
-                    this.speedX = -5;
+                    this.speedY = this.speedMax;
+                    this.speedX = -this.speedMax;
+                    this.direction = 'SOUTH';
                     // console.log('SOUTWEST');
                     break;
                  case (this.game.keys.includes('ArrowRight') && this.game.keys.length === 1):
-                    this.speedX = 5;
+                    this.speedX = this.speedMax;
                     this.speedY = 0;
+                    this.direction = 'EAST';
                     // console.log('EAST');
                     break;
                 case (this.game.keys.includes('ArrowLeft') && this.game.keys.length === 1):
-                    this.speedX = -5;
+                    this.speedX = -this.speedMax;
                     this.speedY = 0;
+                    this.direction = 'WEST';
                     // console.log('WEST');
                     break;
                 case (this.game.keys.includes(' ')):
@@ -76,7 +85,7 @@ window.addEventListener('load', function(){
 
                         if (this.game.variableBox.catched === true) {
                             this.countTick++;
-                            if(this.countTick > 50){
+                            if(this.countTick > 20){
                                 this.shootBox();
                                 console.log('SHOOOOOOOOOOOOOOOT!!');
                                 this.countTick = 0;
@@ -101,7 +110,7 @@ window.addEventListener('load', function(){
                     if (this.game.arrayTank.completed && this.game.checkCollision(this, this.game.arrayTank)){
                         this.passArray();
                     }
-
+                    
 
                         
                     break;
@@ -111,6 +120,82 @@ window.addEventListener('load', function(){
                     this.direction = 'STAY';
                     break;
             }
+            //sprite animation
+            if (this.game.variableBox.catched === true){
+            console.log('CATCHED LOOK FORWARD YOU DUMBASS');
+            this.minFrame = 12;
+            this.maxFrame = 15;
+            if(this.frameX < this.minFrame) this.frameX = this.minFrame;
+            if ((this.frameX < this.maxFrame) && (this.frameX >= this.minFrame) && (this.frameTimer > this.frameInterval)){
+                console.log('Next Frame: ', this.frameX);
+                this.frameX++;
+                this.frameTimer = 0;
+                console.log(this.frameX);
+            } else {
+                if(this.frameX >= this.maxFrame) this.frameX = 0;
+                this.frameTimer += deltaTime;
+            }
+        } else { switch (this.direction){
+                case 'SOUTH':
+                    this.minFrame = 0;
+                    this.maxFrame = 4;
+                    if (this.frameX > this.maxFrame) this.frameX = this.minFrame;
+                    if ((this.frameX < this.maxFrame) && (this.frameX >= this.minFrame) && (this.frameTimer > this.frameInterval)){
+                        this.frameX++;
+                        this.frameTimer = 0;
+                        console.log(this.frameX);
+                    } else {
+                        if(this.frameX >= this.maxFrame) this.frameX = 0;
+                        this.frameTimer += deltaTime;
+                    }
+                break;
+                case 'NORTH':
+                    this.minFrame = 12;
+                    this.maxFrame = 15;
+                    if(this.frameX < this.minFrame) this.frameX = this.minFrame;
+                    if ((this.frameX < this.maxFrame) && (this.frameX >= this.minFrame) && (this.frameTimer > this.frameInterval)){
+                        console.log('Next Frame: ', this.frameX);
+                        this.frameX++;
+                        this.frameTimer = 0;
+                        console.log(this.frameX);
+                    } else {
+                        if(this.frameX >= this.maxFrame) this.frameX = 0;
+                        this.frameTimer += deltaTime;
+                    }
+                break;
+                case 'EAST':
+                    this.minFrame = 4;
+                    this.maxFrame = 7;
+                    if(this.frameX < this.minFrame || this.frameX > this.maxFrame) this.frameX = this.minFrame;
+                    if ((this.frameX < this.maxFrame) && (this.frameX >= this.minFrame) && (this.frameTimer > this.frameInterval)){
+                        console.log('Next Frame: ', this.frameX);
+                        this.frameX++;
+                        this.frameTimer = 0;
+                        console.log(this.frameX);
+                    } else {
+                        if(this.frameX >= this.maxFrame) this.frameX = 0;
+                        this.frameTimer += deltaTime;
+                    }
+                break;
+                case 'WEST':
+                    this.minFrame = 8;
+                    this.maxFrame = 11;
+                    if(this.frameX < this.minFrame || this.frameX > this.maxFrame) this.frameX = this.minFrame;
+                    if ((this.frameX < this.maxFrame) && (this.frameX >= this.minFrame) && (this.frameTimer > this.frameInterval)){
+                        console.log('Next Frame: ', this.frameX);
+                        this.frameX++;
+                        this.frameTimer = 0;
+                        console.log(this.frameX);
+                    } else {
+                        if(this.frameX >= this.maxFrame) this.frameX = 0;
+                        this.frameTimer += deltaTime;
+                    }
+                break;
+                default:
+
+                break;
+            }
+        }
             // if (this.game.keys.includes('ArrowUp')) this.speedY = -5;
             // else if (this.game.keys.includes('ArrowDown')) this.speedY = 5;
             // else if (this.game.keys.includes('ArrowRight')) this.speedX = 5;
@@ -126,8 +211,8 @@ window.addEventListener('load', function(){
         }
         draw(context, deltaTime){
             
-            context.fillStyle = 'red';
-            context.fillRect(this.x, this.y, this.width, this.height);
+            // context.fillStyle = 'red';
+            // context.fillRect(this.x, this.y, this.width, this.height);
             context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
             context.fillStyle = 'white';
             context.font = '30px Helvetica';
@@ -171,25 +256,7 @@ window.addEventListener('load', function(){
             this.game.arrayTank.passed = true;
         }
         moveAnimation(deltaTime){
-            switch (this.direction){
-                case 'STAY':
-
-                break;
-                case 'SOUTH':
-                    if ((this.frameX < this.maxFrame) && (this.frameTimer > this.frameInterval)){
-                        this.frameX++;
-                        this.frameTimer = 0;
-                        console.log('Frame');
-                        console.log(this.frameTimer)
-                    } else {
-                        if(this.frameX >= this.maxFrame) this.frameX = 0;
-                        this.frameTimer += deltaTime;
-                    }
-                break;
-                default:
-
-                break;
-            }
+           
         }
     }
     class InputHandler { //keep track specified user input 
@@ -223,9 +290,13 @@ window.addEventListener('load', function(){
             this.x = x;
             this.y = y;
             this.width = 50;
-            this.height = 20;
+            this.height = 50;
             this.speed = 3;
+            this.image = new Image();
+            this.image.src = 'images/fruits-tileset.png'
             this.color = `rgb(${Math.ceil(Math.random() * 255)},${Math.ceil(Math.random() * 255)},${Math.ceil(Math.random() * 255)})`;
+            this.typesArr = [ 'pizza', 'potion', 'drink', 'dish', 'chicken'];
+            this.type = this.typesArr[Math.floor(Math.random() * 5)];
             this.assigned = false;
             this.randomDirection = Math.random() * (Math.round(Math.random()) ? 1 : -1);
             this.markedForDeletion = false; 
@@ -245,15 +316,32 @@ window.addEventListener('load', function(){
             }
         }
         draw(context){
-            context.fillStyle = this.color;
-            context.fillRect(this.x, this.y, this.width, this.height);
+            // context.fillStyle = this.color;
+            // context.fillRect(this.x, this.y, this.width, this.height);
+            switch(this.type){
+                case 'pizza':
+                    context.drawImage(this.image, 5170, 420, 1890, 2082, this.x, this.y, this.width, this.height);
+                break;
+                case 'potion':
+                    context.drawImage(this.image, 3060, 430, 1350, 2082, this.x, this.y, this.width, this.height);
+                break;
+                case 'drink':
+                    context.drawImage(this.image, 736, 2951, 1184, 2082, this.x, this.y, this.width, this.height);
+                break;
+                case 'dish':
+                    context.drawImage(this.image, 280, 5451, 2091, 2088, this.x, this.y, this.width, this.height);
+                break;
+                case 'chicken':
+                    context.drawImage(this.image, 3200, 5450, 1099, 2091, this.x, this.y, this.width, this.height);
+                break;
+            }
         }
     }
     class ToxicResult extends ReturnProjectile {
         constructor(game, x, y){
             super(game, x, y);
-            this.width = 20;
-            this.height = 50;
+            this.width = 70;
+            this.height = 70;
         }
         update(){
             this.x -= this.speed * 1.5;
@@ -262,8 +350,10 @@ window.addEventListener('load', function(){
             if (this.y > this.game.height * 0.8) this.markedForDeletion = true;
         }
         draw(context){
-            context.fillStyle = 'red';
-            context.fillRect(this.x, this.y, this.width, this.height);
+            // context.fillStyle = 'red';
+            // context.fillRect(this.x, this.y, this.width, this.height);
+            context.drawImage(this.image, 556, 419, 1548, 2092, this.x, this.y, this.width, this.height);
+
         }
     }
     class Particle { //falling screws, bolts, from damaged enemies
@@ -344,7 +434,7 @@ window.addEventListener('load', function(){
             this.x = 400;
             this.y = 100;
             this.image = new Image();
-            this.image.src = 'images/Full_Array.png'
+            this.image.src = 'images/Full_Array.png';
             this.speed = 0;
             this.completed = false;
             this.passed = false;
@@ -410,8 +500,20 @@ window.addEventListener('load', function(){
                 //     console.log('Catched!!!');
                 // }
                 if(this.catched === true){
-                    this.x = this.game.player.x + 5;
-                    this.y = this.game.player.y - 80;
+                    // if (this.game.player.direction === 'NORTH'){
+                        this.x = this.game.player.x + 5;
+                        this.y = this.game.player.y - 80;
+                    // } else if (this.game.player.direction === 'SOUTH'){
+                    //     this.x = this.game.player.x + 5;
+                    //     this.y = this.game.player.y + 80;
+                    // } else if (this.game.player.direction === 'EAST'){
+                    //     this.x = this.game.player.x + 50;
+                    //     this.y = this.game.player.y - 40;
+                    // } else  if (this.game.player.direction === 'WEST'){
+                    //     this.x = this.game.player.x - 50;
+                    //     this.y = this.game.player.y + 40;
+                    // }
+                        
                     // this.countForShoot++;
                 }  
                 if(this.shooted === true && !(this.game.checkCollision(this, this.game.arrayTank))){
@@ -517,6 +619,7 @@ window.addEventListener('load', function(){
                 // console.log('TOXIC');
                 this.countToxic = 0;
                 } else {
+
                     this.projectiles.push(new ReturnProjectile(this.game, this.x, this.y + this.height/2));
                     this.countToxic++;
                 }
