@@ -8,16 +8,24 @@ window.addEventListener('load', function(){
     class Player { //control player character, animate player sheets
         constructor(game){
             this.game = game;
-            this.width = 75;
-            this.height = 75;
+            this.width = 48;
+            this.height = 64;
             this.x = 20;
             this.y = 100;
+            this.image = new Image();
+            this.image.src = 'images/playerDownLong.png';
+            this.frameX = 0;
+            this.frameY = 0;
+            this.maxFrame = 4;
+            this.frameTimer = 0;
+            this.frameInterval = 300;
             this.speedY = 0;
             this.speedX = 0;
+            this.direction = 'STAY';
             this.lives = 3;
             this.countTick = 0;
         }
-        update(){
+        update(deltaTime){
             switch (true) {
 
                 case (this.game.keys.includes('ArrowUp') && this.game.keys.length === 1):
@@ -39,6 +47,8 @@ window.addEventListener('load', function(){
                     this.speedY = 5;
                     this.speedX = 0;
                     // console.log('SOUTH');
+                    this.direction = 'SOUTH';
+                    this.moveAnimation();
                     break;
                 case (this.game.keys.includes('ArrowDown') && this.game.keys.includes('ArrowRight')):
                     this.speedY = 5;
@@ -98,6 +108,7 @@ window.addEventListener('load', function(){
                 default:
                     this.speedX = 0;
                     this.speedY = 0;
+                    this.direction = 'STAY';
                     break;
             }
             // if (this.game.keys.includes('ArrowUp')) this.speedY = -5;
@@ -113,14 +124,23 @@ window.addEventListener('load', function(){
             this.y += this.speedY;
             // console.log('Speed Y', this.speedY);
         }
-        draw(context){
+        draw(context, deltaTime){
             
             context.fillStyle = 'red';
             context.fillRect(this.x, this.y, this.width, this.height);
-            context.fillStyle = 'black';
+            context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
+            context.fillStyle = 'white';
             context.font = '30px Helvetica';
-            context.fillText(this.lives, this.x + 30, this.y + 50);
+            context.fillText(this.lives, this.x + 100, this.y - 5);
             context.fillText('Player', this.x, this.y - 5);
+            //sprite animation
+            // if (this.ammoTimer > this.ammoInterval){
+            //     // console.log('FIRE');
+            //     this.fireReturn();
+            //     this.ammoTimer = 0;
+            // } else {
+            //     this.ammoTimer += deltaTime;
+            // }
         }
         catchBox(){
             if(this.game.checkCollision(this, this.game.variableBox)){
@@ -150,6 +170,27 @@ window.addEventListener('load', function(){
         passArray(){
             this.game.arrayTank.passed = true;
         }
+        moveAnimation(deltaTime){
+            switch (this.direction){
+                case 'STAY':
+
+                break;
+                case 'SOUTH':
+                    if ((this.frameX < this.maxFrame) && (this.frameTimer > this.frameInterval)){
+                        this.frameX++;
+                        this.frameTimer = 0;
+                        console.log('Frame');
+                        console.log(this.frameTimer)
+                    } else {
+                        if(this.frameX >= this.maxFrame) this.frameX = 0;
+                        this.frameTimer += deltaTime;
+                    }
+                break;
+                default:
+
+                break;
+            }
+        }
     }
     class InputHandler { //keep track specified user input 
         constructor(game){
@@ -172,6 +213,9 @@ window.addEventListener('load', function(){
                 console.log(this.game.keys);
             })
         }
+    }
+    class Sprite {
+
     }
     class ReturnProjectile { //player lasers
         constructor(game, x, y){
@@ -196,6 +240,8 @@ window.addEventListener('load', function(){
                 this.x -= this.speed;
                 this.y -= this.speed * this.randomDirection;
                 if (this.x < this.game.width * 0.2) this.markedForDeletion = true;
+                if (this.y < this.game.height * 0.2) this.markedForDeletion = true;
+                if (this.y > this.game.height * 0.8) this.markedForDeletion = true;
             }
         }
         draw(context){
@@ -212,6 +258,8 @@ window.addEventListener('load', function(){
         update(){
             this.x -= this.speed * 1.5;
             if (this.x < this.game.width * 0.2) this.markedForDeletion = true;
+            if (this.y < this.game.height * 0.2) this.markedForDeletion = true;
+            if (this.y > this.game.height * 0.8) this.markedForDeletion = true;
         }
         draw(context){
             context.fillStyle = 'red';
@@ -231,7 +279,21 @@ window.addEventListener('load', function(){
 
     }
     class Background { //pull all layer together to animate the world
+        constructor(game){
+            this.game = game;
+            this.image = new Image(); //document.getElementById('background');
+            this.image.src = 'images/background_and_walls.png';
+            this.width = canvas.width;
+            this.height = canvas.height;
+            this.x = 0;
+            this.y = 0;
+        }
+        update(){
 
+        }
+        draw(context){
+            context.drawImage(this.image, this.x, this.y, this.width, this.height);
+        }
     }
     class UI { //draw information for the user
         constructor(game){
@@ -277,10 +339,12 @@ window.addEventListener('load', function(){
     class ArrayTank {
         constructor(game){
             this.game = game;
-            this.width = 400;
-            this.height = 75;
+            this.width = 480;
+            this.height = 120;
             this.x = 400;
             this.y = 100;
+            this.image = new Image();
+            this.image.src = 'images/Full_Array.png'
             this.speed = 0;
             this.completed = false;
             this.passed = false;
@@ -312,20 +376,24 @@ window.addEventListener('load', function(){
                 context.fillStyle = 'black'
                 context.fillRect(this.x - 30 , this.y, 10, this.height);
             }
-            context.fillStyle = 'black';
+            context.fillStyle = 'white';
             context.font = '30px Helvetica';
             context.fillText('ArrayTank', this.x, this.y - 5);
-            context.fillStyle = 'violet';
-            context.fillRect(this.x, this.y, this.width, this.height);
+            context.drawImage(this.image, this.x, this.y, this.width, this.height);
+
+            // context.fillStyle = 'violet';
+            // context.fillRect(this.x, this.y, this.width, this.height);
         }
     }
     class VariableBox {
         constructor(game){
             this.game = game;
-            this.width = 40;
-            this.height = 40;
+            this.width = 68;
+            this.height = 80;
             this.x = 50;
             this.y = this.game.height / 2;
+            this.image = new Image();
+            this.image.src = 'images/variable_box.png'
             this.speed = 0;
             // this.speedY = 0;
             this.catched = false;
@@ -342,8 +410,8 @@ window.addEventListener('load', function(){
                 //     console.log('Catched!!!');
                 // }
                 if(this.catched === true){
-                    this.x = this.game.player.x + 17;
-                    this.y = this.game.player.y - 40;
+                    this.x = this.game.player.x + 5;
+                    this.y = this.game.player.y - 80;
                     // this.countForShoot++;
                 }  
                 if(this.shooted === true && !(this.game.checkCollision(this, this.game.arrayTank))){
@@ -377,11 +445,12 @@ window.addEventListener('load', function(){
             // if (this.x < this.game.width * 0.2) this.markedForDeletion = true;
         }
         draw(context){
-            context.fillStyle = 'brown';
-            context.fillRect(this.x, this.y, this.width, this.height);
-            context.fillStyle = 'black';
+            // context.fillStyle = 'brown';
+            // context.fillRect(this.x, this.y, this.width, this.height);
+            context.fillStyle = 'white';
             context.font = '30px Helvetica';
             context.fillText('VariableBox', this.x, this.y - 5);
+            context.drawImage(this.image, this.x, this.y, this.width, this.height);
         }
         assignReturn(){
             this.assigned = true;
@@ -391,14 +460,16 @@ window.addEventListener('load', function(){
     class FunctionMachine {
         constructor(game){
             this.game = game;
-            this.width = 150;
-            this.height = 75;
-            this.x = 1000;
-            this.y = 500;
+            this.width = 160;
+            this.height = 160;
+            this.x = 1100;
+            this.y = 450;
+            this.image = new Image(); //document.getElementById('background');
+            this.image.src = 'images/FunctionMachine_Small.png';
             this.projectiles = [];
             this.ammoTimer = 0;
             this.ammoInterval = 700;
-            this.countToxic = 0; 
+            this.countToxic = 0;  
            
         }
         update(deltaTime){
@@ -426,11 +497,12 @@ window.addEventListener('load', function(){
           
         }
         draw(context){
-            context.fillStyle = 'black';
+            context.fillStyle = 'white';
             context.font = '30px Helvetica';
             context.fillText('FunctionMachine', this.x, this.y - 5);
-            context.fillStyle = 'green';
-            context.fillRect(this.x, this.y, this.width, this.height);
+            context.drawImage(this.image, this.x, this.y, this.width, this.height);
+            // context.fillStyle = 'green';
+            // context.fillRect(this.x, this.y, this.width, this.height);
 
             this.projectiles.forEach(projectile => {
                 projectile.draw(context);
@@ -460,6 +532,7 @@ window.addEventListener('load', function(){
         constructor(width, height){
             this.width = width;
             this.height = height;
+            this.background = new Background(this);
             this.player = new Player(this);
             this.input = new InputHandler(this);
             this.functionMachine = new FunctionMachine(this);
@@ -474,13 +547,14 @@ window.addEventListener('load', function(){
             this.timeLimit = 30000;
         }
         update(deltaTime){
-            // if(!deltaTime){             //deltaTime is NaN so we initialize to 0
-            //     deltaTime = 0;
-            // }
+            if(!deltaTime){             //deltaTime is NaN so we initialize to 0
+                deltaTime = 0;
+            }
             if (!this.gameOver) this.gameTime += deltaTime;
             // if (this.gameTime > this.timeLimit) this.gameOver = true;
             if (this.player.lives === 0) this.gameOver = true;
-            this.player.update();
+            // this.background.update();
+            this.player.update(deltaTime);
             this.functionMachine.update(deltaTime);
             this.arrayTank.update();
             this.variableBox.update();
@@ -510,12 +584,12 @@ window.addEventListener('load', function(){
                 
             });
         }
-        draw(context){
-            
+        draw(context, deltaTime){
+            this.background.draw(context);
             this.arrayTank.draw(context);
             this.variableBox.draw(context);
             this.functionMachine.draw(context);
-            this.player.draw(context);
+            this.player.draw(context, deltaTime);
             this.ui.draw(context);
         }
         // addFunctionMachine
@@ -537,7 +611,7 @@ window.addEventListener('load', function(){
         lastTime = timeStamp;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         game.update(deltaTime);
-        game.draw(ctx);
+        game.draw(ctx, deltaTime);
         requestAnimationFrame(animate); // 34:00 explication of animation loop
     }
     animate(0);
