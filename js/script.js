@@ -549,7 +549,7 @@ window.addEventListener('load', function(){
         constructor(game){
             this.game = game;
             this.music = new Audio();
-            this.music.src = '/audio/bonestrousle.mp3';
+            this.music.src = 'audio/bonestrousle.mp3';
             this.music.volume = 0.2;
             this.shoot = new Audio();
             this.shoot.src = 'audio/shoot.wav';
@@ -558,7 +558,7 @@ window.addEventListener('load', function(){
             this.shootToxic.src = 'audio/shoot-object.wav';
             this.shootToxic.volume = 0.3;
             this.gameWinMusic = new Audio();
-            this.gameWinMusic.src = '/audio/win-theme-dating.mp3';
+            this.gameWinMusic.src = 'audio/win-theme-dating.mp3';
             this.gameWinMusic.volume = 0.2;
             this.gameOverMusic = new Audio();
             this.gameOverMusic.src = 'audio/determination.mp3';
@@ -868,7 +868,7 @@ window.addEventListener('load', function(){
             this.variableBoxes = [];
             this.gameOver = false;
             this.score = 0;
-            this.winningScore = 1;
+            this.winningScore = 10;
             this.gameTime = 0;
             this.timeLimit = 30000;
         }
