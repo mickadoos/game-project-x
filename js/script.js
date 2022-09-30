@@ -277,7 +277,7 @@ window.addEventListener('load', function(){
             context.fillStyle = 'white';
             context.font = '30px Helvetica';
             context.fillText(this.lives, this.x + 100, this.y - 5);
-            context.fillText('Player', this.x, this.y - 5);
+            context.fillText('Eloi', this.x, this.y - 5);
             //sprite animation
             // if (this.ammoTimer > this.ammoInterval){
             //     // console.log('FIRE');
@@ -532,10 +532,13 @@ window.addEventListener('load', function(){
                     this.game.audios.music.muted = true;
                     this.game.audios.gameOverMusic.play();
                 }
+                context.shadowOffsetX = 10;
+                context.shadowOffsety = 10;
+                context.shadowColor = 'black';
+                context.font = '100px ' + this.fontFamily;
+                context.fillText(message1, this.game.width * 0.5, this.game.height * 0.5 + 20) ;
                 context.font = '50px ' + this.fontFamily;
-                context.fillText(message1, this.game.width * 0.5, this.game.height * 0.5) - 40;
-                context.font = '25px ' + this.fontFamily;
-                context.fillText(message2, this.game.width * 0.5, this.game.height * 0.5 + 40);
+                context.fillText(message2, this.game.width * 0.5, this.game.height * 0.5 + 100);
             }
             // gametime
 
@@ -547,12 +550,19 @@ window.addEventListener('load', function(){
             this.game = game;
             this.music = new Audio();
             this.music.src = '/audio/bonestrousle.mp3';
+            this.music.volume = 0.2;
             this.shoot = new Audio();
-            this.shoot.src = 'audio/shoot-object.wav';
+            this.shoot.src = 'audio/shoot.wav';
+            this.shoot.volume = 0.2;
+            this.shootToxic = new Audio();
+            this.shootToxic.src = 'audio/shoot-object.wav';
+            this.shootToxic.volume = 0.3;
             this.gameWinMusic = new Audio();
             this.gameWinMusic.src = '/audio/win-theme-dating.mp3';
+            this.gameWinMusic.volume = 0.2;
             this.gameOverMusic = new Audio();
             this.gameOverMusic.src = 'audio/determination.mp3';
+            this.gameOverMusic.volume = 0.1;
             this.toxicHit = new Audio();
             this.toxicHit.src = 'audio/bomb-hit.wav';
             this.step = new Audio();
@@ -632,7 +642,30 @@ window.addEventListener('load', function(){
             context.fillStyle = 'white';
             context.font = '30px Helvetica';
             context.fillText('ArrayTank', this.x, this.y - 5);
-            
+            if (this.completed){
+                if(this.passed){
+
+                } else {
+                    context.save();
+                    context.fillStyle = 'rgb(100, 255, 100)';
+                    context.shadowOffsetX = 3;
+                    context.shadowOffsety = 3;
+                    context.shadowColor = 'black';
+                    context.font = '40px Helvetica';
+                    context.fillText('COMPLETED!! PUSH ME!!', this.x + 500, this.y + 50);
+                    context.restore();
+                }
+            } else {
+                context.save();
+                context.fillStyle = 'violet';
+                context.shadowOffsetX = 3;
+                context.shadowOffsety = 3;
+                context.shadowColor = 'rgb(255, 100, 100)';
+                context.font = '40px Helvetica';
+                context.fillText('I need pizzas and chicken!!', this.x + 500, this.y + 50);
+                context.restore();
+            }
+                
 
             // context.fillStyle = 'violet';
             // context.fillRect(this.x, this.y, this.width, this.height);
@@ -800,6 +833,7 @@ window.addEventListener('load', function(){
             // if(this.ammo > 0){
                 if (this.countToxic % 3 === 0 && this.countToxic > 0){
                 this.projectiles.push(new ToxicResult(this.game, this.x, this.y + this.height/2)); 
+                this.game.audios.shootToxic.play();
                 // console.log(this.projectiles);
                 // console.log('TOXIC');
                 this.countToxic = 0;
@@ -846,7 +880,7 @@ window.addEventListener('load', function(){
             // if (this.gameTime > this.timeLimit) this.gameOver = true;
             if (this.player.lives === 0) this.gameOver = true;
             // this.background.update();
-            // this.audios.update(); // MUUUUUUUUSIIIIIICCCCCC!!
+            this.audios.update(); // MUUUUUUUUSIIIIIICCCCCC!!
             if (this.keys.includes('m') ){    // this has to be upgraded
                 
                 if (!this.audios.music.muted) this.audios.music.muted = true;
@@ -870,7 +904,7 @@ window.addEventListener('load', function(){
                         };
                         if (this.player.lives > 0 && this.player.immuneFrames === 0) {
                             this.player.lives--;
-                            console.log('YOU HURT')
+                            console.log('YOU HURT');   
                             this.audios.toxicHit.play();
                         };
                         this.functionMachine.projectiles.splice(k,1);
@@ -905,17 +939,26 @@ window.addEventListener('load', function(){
                     this.functionMachine.fixed = true;
                     this.gameOver = true;
                 }
+                // if(this.checkCollision(this.player, this.functionMachine)){
+                //     if(this.player.y >= this.functionMachine.y + this.functionMachine.height){
+                //         console.log('collision');
+                //         this.player.y -= 7; //hir
+                //     } else if(this.player.y <= this.functionMachine.y + this.functionMachine.height){
+                //         console.log('collision');
+                //         this.player.y += 7; //hir
+                //     }
+                // }
                 
             });
         }
         draw(context, deltaTime){
+            this.colliders.draw(context);
             this.background.draw(context);
             this.arrayTank.draw(context);
             this.variableBox.draw(context);
             this.functionMachine.draw(context);
             this.player.draw(context, deltaTime);
             this.ui.draw(context);
-            this.colliders.draw(context);
         }
         // addFunctionMachine
         // addArrayTank
