@@ -10,8 +10,8 @@ window.addEventListener('load', function(){
             this.game = game;
             this.width = 48;
             this.height = 64;
-            this.x = 20;
-            this.y = 100;
+            this.x = canvas.width /2 - 40;
+            this.y = canvas.height - 150;
             this.image = new Image();
             this.image.src = 'images/player_animation_tileset.png';
             this.frameX = 0;
@@ -26,6 +26,8 @@ window.addEventListener('load', function(){
             this.direction = 'STAY';
             this.lives = 3;
             this.countTick = 0;
+            this.countLimit = 400;
+            this.immuneFrames = 0;
         }
         update(deltaTime){
             switch (true) {
@@ -35,17 +37,36 @@ window.addEventListener('load', function(){
                     this.speedX = 0;
                     // console.log('NORTH');
                     this.direction = 'NORTH';
+                    this.countTick += deltaTime;
+
+                    if(this.countTick > this.countLimit){
+                        console.log('step')
+                        this.game.audios.step.play();
+                        this.countTick = 0;
+                    }
                     break;
                 case (this.game.keys.includes('ArrowUp') && this.game.keys.includes('ArrowRight')):
                     this.speedY = -this.speedMax;
                     this.speedX = this.speedMax;
                     this.direction = 'NORTH';
+
+                    this.countTick += deltaTime;
+                    if(this.countTick > this.countLimit){
+                        this.game.audios.step.play();
+                        this.countTick = 0;
+                    }
                     // console.log('NORTHEAST');
                     break;
                 case (this.game.keys.includes('ArrowUp') && this.game.keys.includes('ArrowLeft')):
                     this.speedY = -this.speedMax;
                     this.speedX = -this.speedMax;
                     this.direction = 'NORTH';
+
+                    this.countTick += deltaTime;
+                    if(this.countTick > this.countLimit){
+                        this.game.audios.step.play();
+                        this.countTick = 0;
+                    }
                     // console.log('NORTHWEST');
                     break;
                 case (this.game.keys.includes('ArrowDown') && this.game.keys.length === 1):
@@ -53,35 +74,72 @@ window.addEventListener('load', function(){
                     this.speedX = 0;
                     // console.log('SOUTH');
                     this.direction = 'SOUTH';
+
+                    this.countTick += deltaTime;
+                    if(this.countTick > this.countLimit){
+                        this.game.audios.step.play();
+                        this.countTick = 0;
+                    }
                     // this.moveAnimation();
                     break;
                 case (this.game.keys.includes('ArrowDown') && this.game.keys.includes('ArrowRight')):
                     this.speedY = this.speedMax;
                     this.speedX = this.speedMax;
                     this.direction = 'SOUTH';
+
+                    this.countTick += deltaTime;
+                    if(this.countTick > this.countLimit){
+                        this.game.audios.step.play();
+                        this.countTick = 0;
+                    }
                     // console.log('SOUTHEAST');
                     break;
                 case (this.game.keys.includes('ArrowDown') && this.game.keys.includes('ArrowLeft')):
                     this.speedY = this.speedMax;
                     this.speedX = -this.speedMax;
                     this.direction = 'SOUTH';
+
+                    this.countTick += deltaTime;
+                    if(this.countTick > this.countLimit){
+                        this.game.audios.step.play();
+                        this.countTick = 0;
+                    }
                     // console.log('SOUTWEST');
                     break;
                  case (this.game.keys.includes('ArrowRight') && this.game.keys.length === 1):
                     this.speedX = this.speedMax;
                     this.speedY = 0;
                     this.direction = 'EAST';
+
+                    this.countTick += deltaTime;
+                    if(this.countTick > this.countLimit){
+                        this.game.audios.step.play();
+                        this.countTick = 0;
+                    }
                     // console.log('EAST');
                     break;
                 case (this.game.keys.includes('ArrowLeft') && this.game.keys.length === 1):
                     this.speedX = -this.speedMax;
                     this.speedY = 0;
                     this.direction = 'WEST';
+
+                    this.countTick += deltaTime;
+                    if(this.countTick > this.countLimit){
+                        this.game.audios.step.play();
+                        this.countTick = 0;
+                    }
                     // console.log('WEST');
                     break;
                 case (this.game.keys.includes(' ')):
                     // catch method
-                    if (this.game.variableBox.stored === false && this.game.variableBox.stored === false && this.game.variableBox.popped === false){
+                    this.game.functionMachine.projectiles.forEach(projectile => {
+                        if(this.game.checkCollision(this, projectile)){
+                            projectile.pushed = true;//here1
+                            this.game.audios.shoot.play(); //shoot audio
+                        }
+                    })
+
+                    if (this.game.variableBox.stored === false && this.game.variableBox.popped === false){
 
                         if (this.game.variableBox.catched === true) {
                             this.countTick++;
@@ -96,20 +154,21 @@ window.addEventListener('load', function(){
                             console.log('CATCH!');
                         }
                     }
-                    if (this.game.variableBox.stored === true && this.game.checkCollision(this, this.game.variableBox) && this.game.arrayTank.passed === false){
-                        console.log('READY TO POP POP POP');
-
-                        this.countTick++;
-                            if(this.countTick > 50){
-                                this.popBox();
-                                console.log('POP POP POP POP POP POPPOP POP POP POP POP POP!!');
-                                this.game.variableBox.markedForDeletion = true;
-                                this.countTick = 0;
-                            }
-                    }
                     if (this.game.arrayTank.completed && this.game.checkCollision(this, this.game.arrayTank)){
                         this.passArray();
                     }
+                    if (this.game.variableBox.stored === true && this.game.checkCollision(this, this.game.arrayTank) && this.game.arrayTank.passed === false){
+                        console.log('READY TO POP POP POP');
+
+                        this.countTick++;
+                            // if(this.countTick > 50){
+                                this.popBox();
+                                console.log('POP POP POP POP POP POPPOP POP POP POP POP POP!!');
+                                this.game.variableBox.markedForDeletion = true;
+                                // this.countTick = 0;
+                            // }
+                    }
+                    
                     
 
                         
@@ -208,6 +267,7 @@ window.addEventListener('load', function(){
             // console.log('Speed X', this.speedX);
             this.y += this.speedY;
             // console.log('Speed Y', this.speedY);
+            this.immuneFrames += deltaTime;
         }
         draw(context, deltaTime){
             
@@ -251,6 +311,9 @@ window.addEventListener('load', function(){
             this.game.variableBox.stored = false;
             this.game.variableBox.catched = false;
             this.game.variableBox.shooted = false
+
+            this.game.arrayTank.elementsArr.pop();
+            console.log(this.game.arrayTank.elementsArr);
         }
         passArray(){
             this.game.arrayTank.passed = true;
@@ -267,7 +330,8 @@ window.addEventListener('load', function(){
                         (e.key === 'ArrowDown') ||
                         (e.key === 'ArrowRight') ||
                         (e.key === 'ArrowLeft') ||
-                        (e.key === ' ')
+                        (e.key === ' ')     ||
+                        (e.key === 'm')
                 ) && this.game.keys.indexOf(e.key) === -1 ){
                     this.game.keys.push(e.key);
                 }
@@ -295,9 +359,9 @@ window.addEventListener('load', function(){
             this.image = new Image();
             this.image.src = 'images/fruits-tileset.png'
             this.color = `rgb(${Math.ceil(Math.random() * 255)},${Math.ceil(Math.random() * 255)},${Math.ceil(Math.random() * 255)})`;
-            this.typesArr = [ 'pizza', 'potion', 'drink', 'dish', 'chicken'];
-            this.type = this.typesArr[Math.floor(Math.random() * 5)];
+            this.type = this.game.typesArr[Math.floor(Math.random() * 5)];
             this.assigned = false;
+            this.pushed = false;
             this.randomDirection = Math.random() * (Math.round(Math.random()) ? 1 : -1);
             this.markedForDeletion = false; 
            
@@ -307,12 +371,16 @@ window.addEventListener('load', function(){
                 this.x = this.game.variableBox.x;
                 this.y = this.game.variableBox.y;
             }
-            else {
+            else if (!this.pushed){
                 this.x -= this.speed;
                 this.y -= this.speed * this.randomDirection;
                 if (this.x < this.game.width * 0.2) this.markedForDeletion = true;
                 if (this.y < this.game.height * 0.2) this.markedForDeletion = true;
                 if (this.y > this.game.height * 0.8) this.markedForDeletion = true;
+            } else if (this.pushed){
+                this.speed = 10;
+                this.x += 0;
+                this.y -= this.speed;
             }
         }
         draw(context){
@@ -342,10 +410,16 @@ window.addEventListener('load', function(){
             super(game, x, y);
             this.width = 70;
             this.height = 70;
+            this.speedX = 10;
+            this.speedY = (this.y - this.game.player.y)/(this.x - this.game.player.x) * this.speedX;
         }
         update(){
-            this.x -= this.speed * 1.5;
-            if (this.x < this.game.width * 0.2) this.markedForDeletion = true;
+            // this.speedX = 1;
+            // this.speedY = ;
+            //modify end game super machine
+            this.x -= this.speedX;
+            this.y -= this.speedY;
+            if (this.x < this.game.width * 0.2) this.markedForDeletion = true;  //add modifications
             if (this.y < this.game.height * 0.2) this.markedForDeletion = true;
             if (this.y > this.game.height * 0.8) this.markedForDeletion = true;
         }
@@ -367,6 +441,44 @@ window.addEventListener('load', function(){
     }
     class Layer { //handle multi layer background
 
+    }
+    class Colliders {
+        constructor(game){
+            this.game = game;
+        }
+        update(){
+
+        }
+        draw(context){
+            //WALLS
+
+            //top wall
+            context.fillStyle = 'rgba(255, 0,0, 0.2)';
+            context.fillRect(0, -10, canvas.width, 50);
+            //bottom wall
+            context.fillStyle = 'rgba(255, 0,0, 0.2)';
+            context.fillRect(0, canvas.height -20, canvas.width, 50);
+            //right wall
+            context.fillStyle = 'rgba(255, 0,0, 0.2)';
+            context.fillRect(canvas.width -30, 0, 30, canvas.height);
+            //left wall
+            context.fillStyle = 'rgba(255, 0,0, 0.2)';
+            context.fillRect(0, 0, 30, canvas.height);
+
+            //VariableBox
+            context.fillStyle = 'rgba(255, 0,0, 0.2)';
+            context.fillRect(this.game.variableBox.x, this.game.variableBox.y, this.game.variableBox.width, this.game.variableBox.height);
+
+             //ArrayTank
+            context.fillStyle = 'rgba(255, 0,0, 0.2)';
+            context.fillRect(this.game.arrayTank.x, this.game.arrayTank.y, this.game.arrayTank.width, this.game.variableBox.height + 40);
+
+             //functionMachine
+            context.fillStyle = 'rgba(255, 0,0, 0.2)';
+            context.fillRect(this.game.functionMachine.x, this.game.functionMachine.y + 20, this.game.functionMachine.width, this.game.variableBox.height + 60);
+
+
+        }
     }
     class Background { //pull all layer together to animate the world
         constructor(game){
@@ -400,7 +512,7 @@ window.addEventListener('load', function(){
             context.shadowColor = 'black';
             context.font = this.fontSize + 'px' + this.fontFamily;
             //score
-            context.fillText('Score: ' + this.game.score, 20, 40);
+            context.fillText('Score: ' + this.game.score + '/' + this.game.winningScore, 40, 80 );
             //Game Time
             const formattedTime = (this.game.gameTime * 0.001).toFixed(1);
             context.fillText('Time: ' + formattedTime, this.game.width - 200, 40);
@@ -409,12 +521,16 @@ window.addEventListener('load', function(){
                 context.textAlign = 'center';
                 let message1;
                 let message2;
-                if (this.game.score > this.game.winningScore){
+                if (this.game.functionMachine.fixed/*this.game.score >= this.game.winningScore*/){
                     message1 = 'YOU WIN!';
                     message2 = 'Well Done!';
+                    this.game.audios.music.muted = true;
+                    this.game.audios.gameWinMusic.play();
                 } else {
                     message1 = 'YOU DIE!';
                     message2 = 'Try harder!';
+                    this.game.audios.music.muted = true;
+                    this.game.audios.gameOverMusic.play();
                 }
                 context.font = '50px ' + this.fontFamily;
                 context.fillText(message1, this.game.width * 0.5, this.game.height * 0.5) - 40;
@@ -426,6 +542,32 @@ window.addEventListener('load', function(){
             context.restore();
         }
     }
+    class Audios {
+        constructor(game){
+            this.game = game;
+            this.music = new Audio();
+            this.music.src = '/audio/bonestrousle.mp3';
+            this.shoot = new Audio();
+            this.shoot.src = 'audio/shoot-object.wav';
+            this.gameWinMusic = new Audio();
+            this.gameWinMusic.src = '/audio/win-theme-dating.mp3';
+            this.gameOverMusic = new Audio();
+            this.gameOverMusic.src = 'audio/determination.mp3';
+            this.toxicHit = new Audio();
+            this.toxicHit.src = 'audio/bomb-hit.wav';
+            this.step = new Audio();
+            this.step.src = 'audio/footstep.wav';
+            this.point = new Audio();
+            this.point.src = 'audio/points.wav';
+            this.potion = new Audio();
+            this.potion.src = 'audio/potion-hurt.wav';
+            this.completedSong = new Audio();
+            this.completedSong.src = 'audio/completed.wav';
+        }
+        update(){
+            this.music.play();
+        }
+    }
     class ArrayTank {
         constructor(game){
             this.game = game;
@@ -435,18 +577,22 @@ window.addEventListener('load', function(){
             this.y = 100;
             this.image = new Image();
             this.image.src = 'images/Full_Array.png';
+            this.imageCompleted = new Image();
+            this.imageCompleted.src = 'images/Full_Array_Completed.png';
+            this.elementsArr = [];
+            this.elementsCompleted = ['dish', 'drink', 'pizza', 'chicken'];
             this.speed = 0;
             this.completed = false;
             this.passed = false;
         }
         update(){
-            if(this.game.variableBox.stored) 
-            {
-                if(!this.passed) {
-                    console.log('SE COMPLETA')
-                    this.completed = true;
-                }
-            }
+            // if(this.game.variableBox.stored) 
+            // {
+            //     if(!this.passed) {
+            //         console.log('SE COMPLETA')
+            //         this.completed = true;
+            //     }
+            // }
             // if(this.completed){
             //     console.log('COMPLETED');
             //     if(this.game.checkCollision(this, this.game.player)){
@@ -456,31 +602,51 @@ window.addEventListener('load', function(){
             if(this.passed){
                 console.log('PASSED');
                 this.completed = false;
-                this.speed = 10;
-                this.y += this.speed;
+                this.speed = 5;
+                if (this.x < canvas.width * 0.65) this.x += this.speed;
+                else this.y += this.speed;
             }
+            this.game.functionMachine.projectiles.forEach(projectile => {
+                if(projectile.pushed && this.game.checkCollision(this, projectile)){
+                    projectile.markedForDeletion = true;
+                    if (projectile.type === 'pizza' || projectile.type === 'chicken'){
+                        this.game.score++;//here2
+                        this.game.audios.point.play();
+                    } else if (projectile.type === 'potion' && !this.completed) {
+                        if (this.game.score > 0) this.game.score--;//here2
+                        this.game.audios.potion.play();
+                    }
+                }
+            })
     
         }
         draw(context){
             if(this.completed === true){
                 context.fillStyle = 'black'
-                context.fillRect(this.x - 30 , this.y, 10, this.height);
+                // context.fillRect(this.x - 50, this.y, this.width/2, this.height/2);
+                context.drawImage(this.imageCompleted, this.x, this.y, this.width, this.height)
+                //sound here
+            } else {
+                context.drawImage(this.image, this.x, this.y, this.width, this.height);
             }
             context.fillStyle = 'white';
             context.font = '30px Helvetica';
             context.fillText('ArrayTank', this.x, this.y - 5);
-            context.drawImage(this.image, this.x, this.y, this.width, this.height);
+            
 
             // context.fillStyle = 'violet';
             // context.fillRect(this.x, this.y, this.width, this.height);
+        }
+        arraysEqual(a1, a2) {
+            return JSON.stringify(a1)==JSON.stringify(a2);
         }
     }
     class VariableBox {
         constructor(game){
             this.game = game;
             this.width = 68;
-            this.height = 80;
-            this.x = 50;
+            this.height = 80; 
+            this.x = 50; //aleatori amb marges!!!!!!
             this.y = this.game.height / 2;
             this.image = new Image();
             this.image.src = 'images/variable_box.png'
@@ -526,12 +692,29 @@ window.addEventListener('load', function(){
                 }
                 if(this.game.checkCollision(this, this.game.arrayTank) && this.shooted === true){
                     this.stored = true;
+                    // if(this.game.ReturnProjectile.type === 'pizza'){
+
+                    // }
+                    this.game.functionMachine.projectiles.forEach(projectile => {
+                        if(projectile.assigned && !(this.game.arrayTank.elementsArr.includes(projectile.type))) {
+                            this.game.arrayTank.elementsArr.push(projectile.type);
+                        };
+                    })
+                    console.log(this.game.arrayTank.elementsArr);
+                    // this.game.arrayTank.elementsArr.forEach(element => { // comparar elementsArr with elementsCompleted!!!!!!!
+                    //     element //this.game.arraytank.arrasEqual()
+                    // }) 
+                    let what = this.game.arrayTank.arraysEqual(this.game.arrayTank.elementsArr, this.game.arrayTank.elementsCompleted);
+                    console.log('WHAT: '. what);
+                    if (what){
+                        this.game.arrayTank.completed = true;
+                    }
                     this.x = this.game.arrayTank.x + 20;
                     this.y = this.game.arrayTank.y + 20;
                 }
                 if (this.popped === true){
                     this.speed = 15;
-                    this.x += this.speed;
+                    this.y -= this.speed;
                 }
                 if (this.popped && this.markedForDeletion){
                     // console.log(this.x);
@@ -572,17 +755,19 @@ window.addEventListener('load', function(){
             this.ammoTimer = 0;
             this.ammoInterval = 700;
             this.countToxic = 0;  
+            this.fixed = false;
            
         }
         update(deltaTime){
               // fire projectiles every 5 seconds
-
+              const formattedTime = (this.game.gameTime * 0.001).toFixed(1);
             if (this.ammoTimer > this.ammoInterval){
                 // console.log('FIRE');
                 this.fireReturn();
                 this.ammoTimer = 0;
             } else {
-                this.ammoTimer += deltaTime;
+                if (!this.game.arrayTank.passed) this.ammoTimer += deltaTime * formattedTime * 0.1;
+                else this.ammoTimer += deltaTime * formattedTime * 1;
             }
             this.projectiles.forEach(projectile => {
                 projectile.update();
@@ -642,10 +827,14 @@ window.addEventListener('load', function(){
             this.variableBox = new VariableBox(this);
             this.arrayTank = new ArrayTank(this);
             this.ui = new UI(this);
+            this.colliders = new Colliders(this);
+            this.audios = new Audios(this);
             this.keys = [];
+            this.typesArr = [ 'pizza', 'potion', 'drink', 'dish', 'chicken'];
+            this.variableBoxes = [];
             this.gameOver = false;
             this.score = 0;
-            this.winningScore = 10;
+            this.winningScore = 1;
             this.gameTime = 0;
             this.timeLimit = 30000;
         }
@@ -657,23 +846,48 @@ window.addEventListener('load', function(){
             // if (this.gameTime > this.timeLimit) this.gameOver = true;
             if (this.player.lives === 0) this.gameOver = true;
             // this.background.update();
+            // this.audios.update(); // MUUUUUUUUSIIIIIICCCCCC!!
+            if (this.keys.includes('m') ){    // this has to be upgraded
+                
+                if (!this.audios.music.muted) this.audios.music.muted = true;
+                else this.audios.music.muted = false;
+            }
+            
             this.player.update(deltaTime);
             this.functionMachine.update(deltaTime);
             this.arrayTank.update();
             this.variableBox.update();
-            
-            this.functionMachine.projectiles.forEach(projectile => {
+            if(this.variableBoxes.length < 3 && this.gameTime%3000 === 0) this.variableBoxes.push(new VariableBox(this)); 
+            this.functionMachine.projectiles.forEach((projectile, k) => {
                 if(this.checkCollision(projectile, this.player)){
                     // projectile.markedForDeletion = true;
                     if(projectile instanceof ToxicResult){
-                        this.player.lives--;
+                        //aqui
+                        // LETS SOLVE IMMUNE FRAMES LOCO
+                        if (this.player.immuneFrames > 1000) {
+                            this.player.immuneFrames = 0;
+                            console.log('INVINCIBLE');
+                        };
+                        if (this.player.lives > 0 && this.player.immuneFrames === 0) {
+                            this.player.lives--;
+                            console.log('YOU HURT')
+                            this.audios.toxicHit.play();
+                        };
+                        this.functionMachine.projectiles.splice(k,1);
+                        
                     }
                     // if(projectile instanceof ReturnProjectile && !(projectile instanceof ToxicResult)){
                     //     this.score++;
                     //     // this.player.catchReturn();
                     // }
-                    if(this.score > this.winningScore) this.gameOver = true; 
+                    
                 }
+                if(this.score >= this.winningScore) {
+                    this.arrayTank.completed = true; 
+                    if (!this.arrayTank.passed) this.audios.completedSong.play();   
+                    // if (this.audios.completedSong.ended) this.audios.completedSong.pause();   
+
+                }; 
                 if(this.checkCollision(projectile, this.variableBox)){
                     console.log('Collision projectile: ', projectile);
                     if(projectile instanceof ReturnProjectile && !(projectile instanceof ToxicResult) && !(this.variableBox.constant)){
@@ -683,6 +897,13 @@ window.addEventListener('load', function(){
                         })
                         projectile.assigned = true;
                     }
+                }
+                if(this.checkCollision(this.player, this.colliders)){
+                    console.log('COLLIDING, WATCH OUT!');
+                }
+                if(this.checkCollision(this.arrayTank, this.functionMachine) && this.arrayTank.passed){
+                    this.functionMachine.fixed = true;
+                    this.gameOver = true;
                 }
                 
             });
@@ -694,6 +915,7 @@ window.addEventListener('load', function(){
             this.functionMachine.draw(context);
             this.player.draw(context, deltaTime);
             this.ui.draw(context);
+            this.colliders.draw(context);
         }
         // addFunctionMachine
         // addArrayTank
@@ -715,7 +937,7 @@ window.addEventListener('load', function(){
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         game.update(deltaTime);
         game.draw(ctx, deltaTime);
-        requestAnimationFrame(animate); // 34:00 explication of animation loop
+        if(!game.gameOver)requestAnimationFrame(animate); // 34:00 explication of animation loop
     }
     animate(0);
 });
